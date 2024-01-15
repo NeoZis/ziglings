@@ -192,8 +192,8 @@ const TripItem = union(enum) {
             // Oops! The hermit forgot how to capture the union values
             // in a switch statement. Please capture both values as
             // 'p' so the print statements work!
-            .place => print("{s}", .{p.name}),
-            .path => print("--{}->", .{p.dist}),
+            .place => |p| print("{s}", .{p.name}),
+            .path => |p| print("--{}->", .{p.dist}),
         }
     }
 };
@@ -228,6 +228,10 @@ const HermitsNotebook = struct {
     // novelty, it's also a great way to assign multiple items in an
     // array without having to list them one by one. Here we use it to
     // initialize an array with null values.
+    //
+    // тут виходе, вказується довжина масиву - 6, потім те, що там можуть буть null-и
+    // потім вказується який тип даних по нормальному там сториться
+    // потім іде дефолтне значення, це масив з null, який множится 6 разів
     entries: [place_count]?NotebookEntry = .{null} ** place_count,
 
     // The next entry keeps track of where we are in our "todo" list.
@@ -255,7 +259,11 @@ const HermitsNotebook = struct {
             // dereference and optional value "unwrapping" look
             // together. Remember that you return the address with the
             // "&" operator.
-            if (place == entry.*.?.place) return entry;
+            //
+            // спочатку дістаємо значення, потім перевіряємо чи це не null (.?)
+            // і беремо place, якщо плейси однакові, повертаємо ентрі
+            if (place == entry.*.?.place) return &entry.*.?;
+
             // Try to make your answer this long:__________;
         }
         return null;
@@ -309,7 +317,7 @@ const HermitsNotebook = struct {
     //
     // Looks like the hermit forgot something in the return value of
     // this function. What could that be?
-    fn getTripTo(self: *HermitsNotebook, trip: []?TripItem, dest: *Place) void {
+    fn getTripTo(self: *HermitsNotebook, trip: []?TripItem, dest: *Place) !void {
         // We start at the destination entry.
         const destination_entry = self.getEntry(dest);
 
